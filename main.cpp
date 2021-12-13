@@ -7,17 +7,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <iomanip>
+#include <thread>
+#include <iostream>
+#include <pthread.h>
 #include <math.h>
 #include <time.h>
 #include "number.h"
 #include "fraction.h"
 #include "coordinates.h"
 #include "TestsGenerator.cpp"
-#include "deque.h"
-#include "deque.cpp"
+#include "array2.h"
 
-void PrintResultsToConsole(deque* numbers, FILE* input, int amount);
-void PrintResultsToFile(deque* numbers, char* outputpath, FILE* input, int amount);
+void PrintResultsToConsole(Array* numbers, FILE* input, int amount);
+void PrintResultsToFile(Array* numbers, char* outputpath, FILE* input, int amount);
 void LogError(char* errors);
 
 // Условие 11, обработка 12
@@ -59,7 +62,7 @@ int main(int argc, char* argv[]) {
     double first;
     double second;
 
-    deque numbers;
+    Array numbers;
     char* errors;
     int counter = 0;
     bool errorsrisen = false;
@@ -89,13 +92,17 @@ int main(int argc, char* argv[]) {
             break;
         }
 
-        numbers.PushFront(newnum);
+        // std::cout << counter << std::endl;
+        numbers.push_back(newnum);
         counter++;
     }
+    // std::cout<<"YO";
     if (errorsrisen)
         printf("Errors produced during program execution. Check errors.log for further info\n");
     fclose(errorslog);
-    numbers.BubbleSort();
+    std::cout<<"WHA";
+    // int f; std::cin>>f;
+    numbers.parallelBubbleSort();
 
     printf("Program finished in %f seconds.\n", (double)(clock())/CLOCKS_PER_SEC - startingtime);
     if (argc == 2) {
@@ -110,7 +117,7 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-void PrintResultsToConsole(deque* numbers, FILE* input, int amount) {
+void PrintResultsToConsole(Array* numbers, FILE* input, int amount) {
     printf("Given input file:\n"
            "---------------------------------------------------------\n");
     rewind(input);
@@ -122,18 +129,17 @@ void PrintResultsToConsole(deque* numbers, FILE* input, int amount) {
            "---------------------------------------------------------\n\n"
            "Output:\n");
 
-    number* first;
+    number *item;
 
-    while(numbers->Size() != 0) {
-        first = numbers->PopBack();
-        printf("%s\n", first->ToString());
-        delete first;
+    for(int i = 0; i < numbers->size(); i++) {
+        item = (*numbers)[i];
+        printf("%s\n", item->ToString());
     }
 
     printf("\n%d lines in total.", amount);
 }
 
-void PrintResultsToFile(deque* numbers, char* outputpath, FILE* input, int amount) {
+void PrintResultsToFile(Array* numbers, char* outputpath, FILE* input, int amount) {
     FILE* outputfile = fopen(outputpath, "w");
 
     fprintf(outputfile, "Given input file:\n"
@@ -146,11 +152,11 @@ void PrintResultsToFile(deque* numbers, char* outputpath, FILE* input, int amoun
     fprintf(outputfile, "\n"
            "---------------------------------------------------------\n\n"
            "Output:\n");
-    number* first;
-    while(numbers->Size() != 0) {
-        first = numbers->PopBack();
-        fprintf(outputfile, "%s\n", first->ToString());
-        delete first;
+    number *item;
+
+    for(int i = 0; i < numbers->size(); i++) {
+        item = (*numbers)[i];
+        fprintf(outputfile, "%s\n", item->ToString());
     }
     fprintf(outputfile, "\n%d lines in total.", amount);
     fclose(outputfile);
